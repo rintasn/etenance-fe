@@ -72,7 +72,7 @@ const navigation: NavSection[] = [
       },
       {
         title: "Work Orders",
-        href: "/work-orders",
+        href: "/work-order-management",
         icon: ClipboardList,
         badge: 5,
       },
@@ -135,22 +135,22 @@ const navigation: NavSection[] = [
     items: [
       {
         title: "Kategori",
-        href: "/categories",
+        href: "/category-procedure-management",
         icon: Layers,
       },
       {
         title: "Prosedur",
-        href: "/procedures",
+        href: "/procedures-management",
         icon: FileText,
       },
       {
         title: "Penjadwalan",
-        href: "/scheduling",
+        href: "/scheduling-management",
         icon: Calendar,
       },
       {
         title: "Job Loading",
-        href: "/job-loading",
+        href: "/job-loading-management",
         icon: Wrench,
       },
     ],
@@ -160,12 +160,12 @@ const navigation: NavSection[] = [
     items: [
       {
         title: "Analitik",
-        href: "/analytics",
+        href: "/analytics-dashboard",
         icon: BarChart3,
       },
       {
         title: "Laporan WO",
-        href: "/reports/work-orders",
+        href: "/report-work-orders",
         icon: FileText,
       },
     ],
@@ -175,7 +175,7 @@ const navigation: NavSection[] = [
     items: [
       {
         title: "Master Key",
-        href: "/master-keys",
+        href: "/master-key-management",
         icon: Key,
       },
       {

@@ -27,7 +27,7 @@ interface FormModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "full";
@@ -80,7 +80,7 @@ interface DeleteModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title?: string;
-  description?: string;
+  description?: React.ReactNode;
   isLoading?: boolean;
 }
 
@@ -96,7 +96,9 @@ export function DeleteModal({
     <AlertDialog open={open} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-slate-800">{title}</AlertDialogTitle>
+          <AlertDialogTitle className="text-slate-800">
+            {title}
+          </AlertDialogTitle>
           <AlertDialogDescription className="text-slate-500">
             {description}
           </AlertDialogDescription>
@@ -155,7 +157,12 @@ interface DetailRowProps {
 
 export function DetailRow({ label, value, className }: DetailRowProps) {
   return (
-    <div className={cn("flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 py-3 border-b border-slate-100 last:border-0", className)}>
+    <div
+      className={cn(
+        "flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 py-3 border-b border-slate-100 last:border-0",
+        className,
+      )}
+    >
       <span className="text-sm font-medium text-slate-500 sm:w-1/3 sm:flex-shrink-0">
         {label}
       </span>
