@@ -21,11 +21,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Company {
   id_company: string;
@@ -53,7 +60,7 @@ export default function CompanyManagement() {
   const [data, setData] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Modal states
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -71,7 +78,7 @@ export default function CompanyManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/companies", {
+      const response = await fetch(`${BASE_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -120,7 +127,9 @@ export default function CompanyManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/companies/${selectedItem?.id_company}` : "/api/companies";
+      const url = isEditing
+        ? `${BASE_URL}/companies/${selectedItem?.id_company}`
+        : `${BASE_URL}/companies`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -134,7 +143,9 @@ export default function CompanyManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -150,10 +161,13 @@ export default function CompanyManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/companies/${selectedItem.id_company}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/companies/${selectedItem.id_company}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -177,8 +191,12 @@ export default function CompanyManagement() {
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.company_name}</p>
-            <p className="text-xs text-slate-500">{row.original.company_category}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.company_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {row.original.company_category}
+            </p>
           </div>
         </div>
       ),
@@ -270,14 +288,25 @@ export default function CompanyManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Perusahaan" : "Tambah Perusahaan"}
-        description={isEditing ? "Perbarui informasi perusahaan" : "Masukkan informasi perusahaan baru"}
+        description={
+          isEditing
+            ? "Perbarui informasi perusahaan"
+            : "Masukkan informasi perusahaan baru"
+        }
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -289,7 +318,9 @@ export default function CompanyManagement() {
               <Label>Nama Perusahaan *</Label>
               <Input
                 value={formData.company_name}
-                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, company_name: e.target.value })
+                }
                 placeholder="Masukkan nama perusahaan"
                 required
               />
@@ -298,7 +329,9 @@ export default function CompanyManagement() {
               <Label>Alamat</Label>
               <Textarea
                 value={formData.company_address}
-                onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, company_address: e.target.value })
+                }
                 placeholder="Masukkan alamat perusahaan"
                 rows={3}
               />
@@ -307,9 +340,16 @@ export default function CompanyManagement() {
               <Label>Kategori</Label>
               <Select
                 value={formData.company_category}
-                onValueChange={(value) => setFormData({ ...formData, company_category: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    company_category: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Manufacturing">Manufacturing</SelectItem>
                   <SelectItem value="Hospitality">Hospitality</SelectItem>
@@ -324,9 +364,16 @@ export default function CompanyManagement() {
               <Label>Tipe Subscription *</Label>
               <Select
                 value={formData.subscription_type}
-                onValueChange={(value) => setFormData({ ...formData, subscription_type: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    subscription_type: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="trial">Trial</SelectItem>
                   <SelectItem value="basic">Basic</SelectItem>
@@ -341,7 +388,12 @@ export default function CompanyManagement() {
                 type="number"
                 min={1}
                 value={formData.qty_subscriptions}
-                onChange={(e) => setFormData({ ...formData, qty_subscriptions: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    qty_subscriptions: parseInt(e.target.value),
+                  })
+                }
               />
             </div>
             <div>
@@ -349,16 +401,25 @@ export default function CompanyManagement() {
               <Input
                 type="date"
                 value={formData.expired_date}
-                onChange={(e) => setFormData({ ...formData, expired_date: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, expired_date: e.target.value })
+                }
               />
             </div>
             <div>
               <Label>Status *</Label>
               <Select
                 value={formData.company_status}
-                onValueChange={(value) => setFormData({ ...formData, company_status: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    company_status: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
@@ -388,14 +449,42 @@ export default function CompanyManagement() {
       >
         {selectedItem && (
           <div>
-            <DetailRow label="Nama Perusahaan" value={selectedItem.company_name} />
+            <DetailRow
+              label="Nama Perusahaan"
+              value={selectedItem.company_name}
+            />
             <DetailRow label="Alamat" value={selectedItem.company_address} />
             <DetailRow label="Kategori" value={selectedItem.company_category} />
-            <DetailRow label="Tipe Subscription" value={<span className="capitalize">{selectedItem.subscription_type}</span>} />
-            <DetailRow label="Jumlah Subscription" value={selectedItem.qty_subscriptions} />
-            <DetailRow label="Tanggal Expired" value={selectedItem.expired_date ? new Date(selectedItem.expired_date).toLocaleDateString("id-ID") : "-"} />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.company_status} />} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Tipe Subscription"
+              value={
+                <span className="capitalize">
+                  {selectedItem.subscription_type}
+                </span>
+              }
+            />
+            <DetailRow
+              label="Jumlah Subscription"
+              value={selectedItem.qty_subscriptions}
+            />
+            <DetailRow
+              label="Tanggal Expired"
+              value={
+                selectedItem.expired_date
+                  ? new Date(selectedItem.expired_date).toLocaleDateString(
+                      "id-ID",
+                    )
+                  : "-"
+              }
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.company_status} />}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

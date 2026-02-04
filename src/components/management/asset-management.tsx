@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, Package, QrCode, Calendar } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Package,
+  QrCode,
+  Calendar,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,11 +29,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge, CriticalityBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Asset {
   id_asset: string;
@@ -86,7 +101,7 @@ export default function AssetManagement() {
   const [parentAssets, setParentAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -105,7 +120,7 @@ export default function AssetManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/assets", {
+      const response = await fetch(`${BASE_URL}/assets`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -123,7 +138,7 @@ export default function AssetManagement() {
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locations", {
+      const response = await fetch(`${BASE_URL}/locations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -136,7 +151,7 @@ export default function AssetManagement() {
   const fetchAssetTypes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/asset-types", {
+      const response = await fetch(`${BASE_URL}/asset-types`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -149,7 +164,7 @@ export default function AssetManagement() {
   const fetchVendors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/vendors", {
+      const response = await fetch(`${BASE_URL}/vendors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -201,7 +216,9 @@ export default function AssetManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/assets/${selectedItem?.id_asset}` : "/api/assets";
+      const url = isEditing
+        ? `${BASE_URL}/assets/${selectedItem?.id_asset}`
+        : `${BASE_URL}/assets`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -215,7 +232,9 @@ export default function AssetManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -231,10 +250,13 @@ export default function AssetManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/assets/${selectedItem.id_asset}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/assets/${selectedItem.id_asset}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -258,8 +280,12 @@ export default function AssetManagement() {
             <Package className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.asset_name}</p>
-            <p className="text-xs text-slate-500">{row.original.asset_type_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.asset_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {row.original.asset_type_name}
+            </p>
           </div>
         </div>
       ),
@@ -268,7 +294,9 @@ export default function AssetManagement() {
       accessorKey: "location_name",
       header: "Lokasi",
       cell: ({ row }) => (
-        <span className="text-slate-600">{row.original.location_name || "-"}</span>
+        <span className="text-slate-600">
+          {row.original.location_name || "-"}
+        </span>
       ),
     },
     {
@@ -316,7 +344,10 @@ export default function AssetManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -351,15 +382,24 @@ export default function AssetManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Aset" : "Tambah Aset"}
-        description={isEditing ? "Perbarui informasi aset" : "Masukkan informasi aset baru"}
+        description={
+          isEditing ? "Perbarui informasi aset" : "Masukkan informasi aset baru"
+        }
         size="lg"
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -371,7 +411,9 @@ export default function AssetManagement() {
               <Label>Nama Aset *</Label>
               <Input
                 value={formData.asset_name}
-                onChange={(e) => setFormData({ ...formData, asset_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, asset_name: e.target.value })
+                }
                 placeholder="Masukkan nama aset"
                 required
               />
@@ -380,7 +422,9 @@ export default function AssetManagement() {
               <Label>Deskripsi</Label>
               <Textarea
                 value={formData.asset_desc}
-                onChange={(e) => setFormData({ ...formData, asset_desc: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, asset_desc: e.target.value })
+                }
                 placeholder="Masukkan deskripsi aset"
                 rows={3}
               />
@@ -389,9 +433,16 @@ export default function AssetManagement() {
               <Label>Lokasi *</Label>
               <Select
                 value={formData.id_location}
-                onValueChange={(value) => setFormData({ ...formData, id_location: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_location: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih lokasi" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih lokasi" />
+                </SelectTrigger>
                 <SelectContent>
                   {locations.map((loc) => (
                     <SelectItem key={loc.id_location} value={loc.id_location}>
@@ -405,12 +456,22 @@ export default function AssetManagement() {
               <Label>Tipe Aset *</Label>
               <Select
                 value={formData.id_asset_type}
-                onValueChange={(value) => setFormData({ ...formData, id_asset_type: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_asset_type: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih tipe aset" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih tipe aset" />
+                </SelectTrigger>
                 <SelectContent>
                   {assetTypes.map((type) => (
-                    <SelectItem key={type.id_asset_type} value={type.id_asset_type}>
+                    <SelectItem
+                      key={type.id_asset_type}
+                      value={type.id_asset_type}
+                    >
                       {type.type_name}
                     </SelectItem>
                   ))}
@@ -421,7 +482,12 @@ export default function AssetManagement() {
               <Label>Serial Number</Label>
               <Input
                 value={formData.asset_serialnumber}
-                onChange={(e) => setFormData({ ...formData, asset_serialnumber: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    asset_serialnumber: e.target.value,
+                  })
+                }
                 placeholder="Masukkan serial number"
               />
             </div>
@@ -432,16 +498,28 @@ export default function AssetManagement() {
                 min={1900}
                 max={2100}
                 value={formData.asset_year}
-                onChange={(e) => setFormData({ ...formData, asset_year: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    asset_year: parseInt(e.target.value),
+                  })
+                }
               />
             </div>
             <div>
               <Label>Criticality *</Label>
               <Select
                 value={formData.asset_criticality}
-                onValueChange={(value) => setFormData({ ...formData, asset_criticality: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    asset_criticality: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
@@ -454,9 +532,16 @@ export default function AssetManagement() {
               <Label>Status *</Label>
               <Select
                 value={formData.asset_status}
-                onValueChange={(value) => setFormData({ ...formData, asset_status: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    asset_status: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="operational">Operational</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
@@ -469,9 +554,16 @@ export default function AssetManagement() {
               <Label>Vendor</Label>
               <Select
                 value={formData.id_vendor}
-                onValueChange={(value) => setFormData({ ...formData, id_vendor: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_vendor: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih vendor" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih vendor" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada</SelectItem>
                   {vendors.map((vendor) => (
@@ -486,13 +578,17 @@ export default function AssetManagement() {
               <Label>Parent Aset</Label>
               <Select
                 value={formData.id_parent_asset}
-                onValueChange={(value) => setFormData({ 
-                  ...formData, 
-                  id_parent_asset: value,
-                  level_asset: value ? 2 : 1
-                })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_parent_asset: value,
+                    level_asset: value ? 2 : 1,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih parent aset" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih parent aset" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada (Level 1)</SelectItem>
                   {parentAssets.map((asset) => (
@@ -507,7 +603,9 @@ export default function AssetManagement() {
               <Label>QR Code</Label>
               <Input
                 value={formData.asset_qr_code}
-                onChange={(e) => setFormData({ ...formData, asset_qr_code: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, asset_qr_code: e.target.value })
+                }
                 placeholder="Masukkan kode QR"
               />
             </div>
@@ -536,17 +634,48 @@ export default function AssetManagement() {
           <div>
             <DetailRow label="Nama Aset" value={selectedItem.asset_name} />
             <DetailRow label="Deskripsi" value={selectedItem.asset_desc} />
-            <DetailRow label="Tipe Aset" value={selectedItem.asset_type_name || "-"} />
-            <DetailRow label="Lokasi" value={selectedItem.location_name || "-"} />
-            <DetailRow label="Serial Number" value={selectedItem.asset_serialnumber || "-"} />
+            <DetailRow
+              label="Tipe Aset"
+              value={selectedItem.asset_type_name || "-"}
+            />
+            <DetailRow
+              label="Lokasi"
+              value={selectedItem.location_name || "-"}
+            />
+            <DetailRow
+              label="Serial Number"
+              value={selectedItem.asset_serialnumber || "-"}
+            />
             <DetailRow label="Tahun" value={selectedItem.asset_year || "-"} />
-            <DetailRow label="Criticality" value={<CriticalityBadge criticality={selectedItem.asset_criticality} />} />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.asset_status} />} />
+            <DetailRow
+              label="Criticality"
+              value={
+                <CriticalityBadge
+                  criticality={selectedItem.asset_criticality}
+                />
+              }
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.asset_status} />}
+            />
             <DetailRow label="Vendor" value={selectedItem.vendor_name || "-"} />
-            <DetailRow label="Parent Aset" value={selectedItem.parent_asset_name || "-"} />
-            <DetailRow label="Level" value={`Level ${selectedItem.level_asset}`} />
-            <DetailRow label="QR Code" value={selectedItem.asset_qr_code || "-"} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Parent Aset"
+              value={selectedItem.parent_asset_name || "-"}
+            />
+            <DetailRow
+              label="Level"
+              value={`Level ${selectedItem.level_asset}`}
+            />
+            <DetailRow
+              label="QR Code"
+              value={selectedItem.asset_qr_code || "-"}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

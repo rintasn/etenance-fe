@@ -93,6 +93,8 @@ import { toast } from "sonner";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface Schedule {
   id_schedule: string;
   schedule_name: string;
@@ -987,7 +989,7 @@ export default function SchedulingMaintenance() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/schedules", {
+      const response = await fetch(`${BASE_URL}/schedules`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1002,7 +1004,7 @@ export default function SchedulingMaintenance() {
   const fetchAssets = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/assets", {
+      const response = await fetch(`${BASE_URL}/assets`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1015,7 +1017,7 @@ export default function SchedulingMaintenance() {
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locations", {
+      const response = await fetch(`${BASE_URL}/locations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1028,7 +1030,7 @@ export default function SchedulingMaintenance() {
   const fetchTeams = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/teams", {
+      const response = await fetch(`${BASE_URL}/teams`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1041,7 +1043,7 @@ export default function SchedulingMaintenance() {
   const fetchProcedures = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/procedures", {
+      const response = await fetch(`${BASE_URL}/procedures`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1054,7 +1056,7 @@ export default function SchedulingMaintenance() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/categories", {
+      const response = await fetch(`${BASE_URL}/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -1118,14 +1120,17 @@ export default function SchedulingMaintenance() {
   const handleToggleActive = async (item: Schedule) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/schedules/${item.id_schedule}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${BASE_URL}/schedules/${item.id_schedule}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, is_active: !item.is_active }),
         },
-        body: JSON.stringify({ ...item, is_active: !item.is_active }),
-      });
+      );
 
       if (!response.ok) throw new Error("Gagal mengubah status");
 
@@ -1165,8 +1170,8 @@ export default function SchedulingMaintenance() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/schedules/${selectedItem?.id_schedule}`
-        : "/api/schedules";
+        ? `${BASE_URL}/schedules/${selectedItem?.id_schedule}`
+        : `${BASE_URL}/schedules`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -1201,7 +1206,7 @@ export default function SchedulingMaintenance() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `/api/schedules/${selectedItem.id_schedule}`,
+        `${BASE_URL}/schedules/${selectedItem.id_schedule}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -1886,7 +1891,10 @@ export default function SchedulingMaintenance() {
                       <Select
                         value={formData.frequency_unit}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, frequency_unit: value })
+                          setFormData({
+                            ...formData,
+                            frequency_unit: value === "__none__" ? "" : value,
+                          })
                         }
                       >
                         <SelectTrigger>
@@ -1970,7 +1978,10 @@ export default function SchedulingMaintenance() {
                   <Select
                     value={formData.id_asset}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, id_asset: value })
+                      setFormData({
+                        ...formData,
+                        id_asset: value === "__none__" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -1991,7 +2002,10 @@ export default function SchedulingMaintenance() {
                   <Select
                     value={formData.id_location}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, id_location: value })
+                      setFormData({
+                        ...formData,
+                        id_location: value === "__none__" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -2015,7 +2029,10 @@ export default function SchedulingMaintenance() {
                   <Select
                     value={formData.id_procedure}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, id_procedure: value })
+                      setFormData({
+                        ...formData,
+                        id_procedure: value === "__none__" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -2039,7 +2056,10 @@ export default function SchedulingMaintenance() {
                   <Select
                     value={formData.id_categories}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, id_categories: value })
+                      setFormData({
+                        ...formData,
+                        id_categories: value === "__none__" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -2063,7 +2083,10 @@ export default function SchedulingMaintenance() {
                   <Select
                     value={formData.id_team}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, id_team: value })
+                      setFormData({
+                        ...formData,
+                        id_team: value === "__none__" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger>

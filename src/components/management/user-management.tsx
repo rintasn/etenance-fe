@@ -40,6 +40,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface User {
   id_user: string;
   username: string;
@@ -93,7 +95,7 @@ export default function UserManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/users", {
+      const response = await fetch(`${BASE_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -108,7 +110,7 @@ export default function UserManagement() {
   const fetchCompanies = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/companies", {
+      const response = await fetch(`${BASE_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -154,8 +156,8 @@ export default function UserManagement() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/users/${selectedItem?.id_user}`
-        : "/api/users";
+        ? `${BASE_URL}/users/${selectedItem?.id_user}`
+        : `${BASE_URL}/users`;
       const method = isEditing ? "PUT" : "POST";
 
       const payload = { ...formData };
@@ -195,10 +197,13 @@ export default function UserManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/users/${selectedItem.id_user}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/users/${selectedItem.id_user}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -387,7 +392,10 @@ export default function UserManagement() {
               <Select
                 value={formData.user_role}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, user_role: value })
+                  setFormData({
+                    ...formData,
+                    user_role: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -407,7 +415,10 @@ export default function UserManagement() {
               <Select
                 value={formData.id_company}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_company: value })
+                  setFormData({
+                    ...formData,
+                    id_company: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>

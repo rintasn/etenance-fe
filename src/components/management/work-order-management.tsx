@@ -68,6 +68,8 @@ import { toast } from "sonner";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080";
+
 interface WorkOrder {
   id_wo: string;
   wo_name: string;
@@ -641,6 +643,12 @@ export default function WorkOrderManagement() {
   const [formData, setFormData] = useState(initialFormData);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalRows, setTotalRows] = useState(0);
+  const totalPages = Math.ceil(totalRows / limit);
+
   // Urgent work orders for alarm
   const urgentWorkOrders = useMemo(() => {
     return data.filter((wo) => {
@@ -651,13 +659,17 @@ export default function WorkOrderManagement() {
   }, [data]);
 
   useEffect(() => {
-    fetchData();
     fetchLocations();
     fetchAssets();
     fetchCategories();
     fetchProcedures();
     fetchVendors();
   }, []);
+
+  // Fetch data when page or limit changes
+  useEffect(() => {
+    fetchData();
+  }, [page, limit]);
 
   useEffect(() => {
     if (activeTab === "all") {
@@ -684,13 +696,22 @@ export default function WorkOrderManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/work-orders", {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${BASE_URL}/api/v1/work-orders/get-data`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          page: page,
+          limit: limit,
+        }),
       });
       const result = await response.json();
       if (result.data) {
         setData(result.data);
         setFilteredData(result.data);
+        setTotalRows(result.pagination?.total_rows || 0);
       }
     } catch (error) {
       toast.error("Gagal memuat data");
@@ -702,7 +723,7 @@ export default function WorkOrderManagement() {
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locations", {
+      const response = await fetch(`${BASE_URL}/api/v1/locations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -715,7 +736,7 @@ export default function WorkOrderManagement() {
   const fetchAssets = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/assets", {
+      const response = await fetch(`${BASE_URL}/api/v1/assets`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -728,7 +749,7 @@ export default function WorkOrderManagement() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/categories", {
+      const response = await fetch(`${BASE_URL}/api/v1/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -741,7 +762,7 @@ export default function WorkOrderManagement() {
   const fetchProcedures = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/procedures", {
+      const response = await fetch(`${BASE_URL}/api/v1/procedures`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -754,7 +775,7 @@ export default function WorkOrderManagement() {
   const fetchVendors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/vendors", {
+      const response = await fetch(`${BASE_URL}/api/v1/vendors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -817,8 +838,8 @@ export default function WorkOrderManagement() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/work-orders/${selectedItem?.id_wo}`
-        : "/api/work-orders";
+        ? `${BASE_URL}/api/v1/work-orders/${selectedItem?.id_wo}`
+        : `${BASE_URL}/api/v1/work-orders`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -852,10 +873,13 @@ export default function WorkOrderManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/work-orders/${selectedItem.id_wo}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/v1/work-orders/${selectedItem.id_wo}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -872,14 +896,17 @@ export default function WorkOrderManagement() {
   const handleStatusChange = async (item: WorkOrder, newStatus: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/work-orders/${item.id_wo}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${BASE_URL}/api/v1/work-orders/${item.id_wo}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, wo_status: newStatus }),
         },
-        body: JSON.stringify({ ...item, wo_status: newStatus }),
-      });
+      );
 
       if (!response.ok) throw new Error("Gagal mengubah status");
 
@@ -894,17 +921,20 @@ export default function WorkOrderManagement() {
   const handleCalendarUpdateWO = async (wo: WorkOrder, newDueDate: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/work-orders/${wo.id_wo}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${BASE_URL}/api/v1/work-orders/${wo.id_wo}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ...wo,
+            due_date: `${newDueDate}T${wo.due_date?.slice(11, 16) || "09:00"}`,
+          }),
         },
-        body: JSON.stringify({
-          ...wo,
-          due_date: `${newDueDate}T${wo.due_date?.slice(11, 16) || "09:00"}`,
-        }),
-      });
+      );
 
       if (!response.ok) throw new Error("Gagal mengubah jadwal");
 
@@ -1196,7 +1226,10 @@ export default function WorkOrderManagement() {
               <Select
                 value={formData.wo_type}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, wo_type: value })
+                  setFormData({
+                    ...formData,
+                    wo_type: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -1215,7 +1248,10 @@ export default function WorkOrderManagement() {
               <Select
                 value={formData.wo_priority}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, wo_priority: value })
+                  setFormData({
+                    ...formData,
+                    wo_priority: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -1232,16 +1268,19 @@ export default function WorkOrderManagement() {
             <div>
               <Label>Lokasi</Label>
               <Select
-                value={formData.id_location}
+                value={formData.id_location || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_location: value })
+                  setFormData({
+                    ...formData,
+                    id_location: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih lokasi" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="__none__">Tidak ada</SelectItem>
                   {locations.map((loc) => (
                     <SelectItem key={loc.id_location} value={loc.id_location}>
                       {loc.location_name}
@@ -1253,16 +1292,19 @@ export default function WorkOrderManagement() {
             <div>
               <Label>Aset</Label>
               <Select
-                value={formData.id_asset}
+                value={formData.id_asset || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_asset: value })
+                  setFormData({
+                    ...formData,
+                    id_asset: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih aset" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="__none__">Tidak ada</SelectItem>
                   {assets.map((asset) => (
                     <SelectItem key={asset.id_asset} value={asset.id_asset}>
                       {asset.asset_name}
@@ -1274,16 +1316,19 @@ export default function WorkOrderManagement() {
             <div>
               <Label>Kategori</Label>
               <Select
-                value={formData.id_categories}
+                value={formData.id_categories || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_categories: value })
+                  setFormData({
+                    ...formData,
+                    id_categories: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="__none__">Tidak ada</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem
                       key={cat.id_categories}
@@ -1298,16 +1343,19 @@ export default function WorkOrderManagement() {
             <div>
               <Label>Prosedur</Label>
               <Select
-                value={formData.id_procedure}
+                value={formData.id_procedure || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_procedure: value })
+                  setFormData({
+                    ...formData,
+                    id_procedure: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih prosedur" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="__none__">Tidak ada</SelectItem>
                   {procedures.map((proc) => (
                     <SelectItem
                       key={proc.id_procedure}
@@ -1347,16 +1395,19 @@ export default function WorkOrderManagement() {
             <div>
               <Label>Vendor</Label>
               <Select
-                value={formData.id_vendor}
+                value={formData.id_vendor || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_vendor: value })
+                  setFormData({
+                    ...formData,
+                    id_vendor: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih vendor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="__none__">Tidak ada</SelectItem>
                   {vendors.map((vendor) => (
                     <SelectItem key={vendor.id_vendor} value={vendor.id_vendor}>
                       {vendor.vendor_name}
@@ -1370,7 +1421,10 @@ export default function WorkOrderManagement() {
               <Select
                 value={formData.wo_status}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, wo_status: value })
+                  setFormData({
+                    ...formData,
+                    wo_status: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>

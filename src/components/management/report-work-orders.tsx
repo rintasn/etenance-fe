@@ -93,6 +93,8 @@ import { toast } from "sonner";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface WorkOrderReport {
   id_wo: string;
   wo_number: string;
@@ -938,7 +940,7 @@ export default function WorkOrderReports() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/reports/work-orders", {
+      const response = await fetch(`${BASE_URL}/reports/work-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -958,7 +960,7 @@ export default function WorkOrderReports() {
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locations", {
+      const response = await fetch(`${BASE_URL}/locations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -975,7 +977,7 @@ export default function WorkOrderReports() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/categories", {
+      const response = await fetch(`${BASE_URL}/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -992,7 +994,7 @@ export default function WorkOrderReports() {
   const fetchTeams = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/teams", {
+      const response = await fetch(`${BASE_URL}/teams`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();

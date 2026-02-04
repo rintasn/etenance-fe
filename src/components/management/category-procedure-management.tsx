@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, Layers, FileText, Clock } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Layers,
+  FileText,
+  Clock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,13 +29,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 // ==================== CATEGORY MANAGEMENT ====================
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Category {
   id_categories: string;
@@ -60,7 +75,7 @@ export function CategoryManagement() {
   const [data, setData] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -76,7 +91,7 @@ export function CategoryManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/categories", {
+      const response = await fetch(`${BASE_URL}/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -121,7 +136,9 @@ export function CategoryManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/categories/${selectedItem?.id_categories}` : "/api/categories";
+      const url = isEditing
+        ? `${BASE_URL}/categories/${selectedItem?.id_categories}`
+        : `${BASE_URL}/categories`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -135,7 +152,9 @@ export function CategoryManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -151,10 +170,13 @@ export function CategoryManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/categories/${selectedItem.id_categories}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/categories/${selectedItem.id_categories}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -178,8 +200,12 @@ export function CategoryManagement() {
             <Layers className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.category_name}</p>
-            <p className="text-xs text-slate-500">{row.original.category_icon}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.category_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {row.original.category_icon}
+            </p>
           </div>
         </div>
       ),
@@ -188,7 +214,9 @@ export function CategoryManagement() {
       accessorKey: "category_desc",
       header: "Deskripsi",
       cell: ({ row }) => (
-        <span className="text-slate-600">{row.original.category_desc || "-"}</span>
+        <span className="text-slate-600">
+          {row.original.category_desc || "-"}
+        </span>
       ),
     },
     {
@@ -208,7 +236,10 @@ export function CategoryManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -244,9 +275,18 @@ export function CategoryManagement() {
         title={isEditing ? "Edit Kategori" : "Tambah Kategori"}
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>Batal</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -257,7 +297,9 @@ export function CategoryManagement() {
             <Label>Nama Kategori *</Label>
             <Input
               value={formData.category_name}
-              onChange={(e) => setFormData({ ...formData, category_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, category_name: e.target.value })
+              }
               placeholder="Masukkan nama kategori"
               required
             />
@@ -266,12 +308,21 @@ export function CategoryManagement() {
             <Label>Icon</Label>
             <Select
               value={formData.category_icon}
-              onValueChange={(value) => setFormData({ ...formData, category_icon: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  category_icon: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {iconOptions.map((icon) => (
-                  <SelectItem key={icon.value} value={icon.value}>{icon.label}</SelectItem>
+                  <SelectItem key={icon.value} value={icon.value}>
+                    {icon.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -280,7 +331,9 @@ export function CategoryManagement() {
             <Label>Deskripsi</Label>
             <Textarea
               value={formData.category_desc}
-              onChange={(e) => setFormData({ ...formData, category_desc: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, category_desc: e.target.value })
+              }
               placeholder="Masukkan deskripsi kategori"
               rows={3}
             />
@@ -297,13 +350,26 @@ export function CategoryManagement() {
         isLoading={isSubmitting}
       />
 
-      <DetailModal open={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detail Kategori">
+      <DetailModal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Kategori"
+      >
         {selectedItem && (
           <div>
-            <DetailRow label="Nama Kategori" value={selectedItem.category_name} />
+            <DetailRow
+              label="Nama Kategori"
+              value={selectedItem.category_name}
+            />
             <DetailRow label="Icon" value={selectedItem.category_icon} />
-            <DetailRow label="Deskripsi" value={selectedItem.category_desc || "-"} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Deskripsi"
+              value={selectedItem.category_desc || "-"}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>
@@ -342,7 +408,7 @@ export function ProcedureManagement() {
   const [assetTypes, setAssetTypes] = useState<AssetType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -359,7 +425,7 @@ export function ProcedureManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/procedures", {
+      const response = await fetch(`${BASE_URL}/procedures`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -374,7 +440,7 @@ export function ProcedureManagement() {
   const fetchAssetTypes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/asset-types", {
+      const response = await fetch(`${BASE_URL}/asset-types`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -419,7 +485,9 @@ export function ProcedureManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/procedures/${selectedItem?.id_procedure}` : "/api/procedures";
+      const url = isEditing
+        ? `${BASE_URL}/procedures/${selectedItem?.id_procedure}`
+        : `${BASE_URL}/procedures`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -433,7 +501,9 @@ export function ProcedureManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -449,10 +519,13 @@ export function ProcedureManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/procedures/${selectedItem.id_procedure}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/procedures/${selectedItem.id_procedure}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -476,8 +549,12 @@ export function ProcedureManagement() {
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.procedure_name}</p>
-            <p className="text-xs text-slate-500">{row.original.asset_type_name || "General"}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.procedure_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {row.original.asset_type_name || "General"}
+            </p>
           </div>
         </div>
       ),
@@ -486,7 +563,9 @@ export function ProcedureManagement() {
       accessorKey: "procedure_desc",
       header: "Deskripsi",
       cell: ({ row }) => (
-        <span className="text-slate-600 line-clamp-2">{row.original.procedure_desc || "-"}</span>
+        <span className="text-slate-600 line-clamp-2">
+          {row.original.procedure_desc || "-"}
+        </span>
       ),
     },
     {
@@ -503,7 +582,9 @@ export function ProcedureManagement() {
       accessorKey: "asset_type_name",
       header: "Tipe Aset",
       cell: ({ row }) => (
-        <Badge variant="outline">{row.original.asset_type_name || "General"}</Badge>
+        <Badge variant="outline">
+          {row.original.asset_type_name || "General"}
+        </Badge>
       ),
     },
     {
@@ -523,7 +604,10 @@ export function ProcedureManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -569,9 +653,18 @@ export function ProcedureManagement() {
         size="lg"
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>Batal</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -583,7 +676,9 @@ export function ProcedureManagement() {
               <Label>Nama Prosedur *</Label>
               <Input
                 value={formData.procedure_name}
-                onChange={(e) => setFormData({ ...formData, procedure_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, procedure_name: e.target.value })
+                }
                 placeholder="Masukkan nama prosedur"
                 required
               />
@@ -592,7 +687,9 @@ export function ProcedureManagement() {
               <Label>Deskripsi</Label>
               <Textarea
                 value={formData.procedure_desc}
-                onChange={(e) => setFormData({ ...formData, procedure_desc: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, procedure_desc: e.target.value })
+                }
                 placeholder="Masukkan deskripsi prosedur"
                 rows={2}
               />
@@ -601,13 +698,23 @@ export function ProcedureManagement() {
               <Label>Tipe Aset</Label>
               <Select
                 value={formData.id_asset_type}
-                onValueChange={(value) => setFormData({ ...formData, id_asset_type: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_asset_type: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih tipe aset" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih tipe aset" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">General</SelectItem>
                   {assetTypes.map((type) => (
-                    <SelectItem key={type.id_asset_type} value={type.id_asset_type}>
+                    <SelectItem
+                      key={type.id_asset_type}
+                      value={type.id_asset_type}
+                    >
                       {type.type_name}
                     </SelectItem>
                   ))}
@@ -620,18 +727,27 @@ export function ProcedureManagement() {
                 type="number"
                 min={1}
                 value={formData.estimated_time}
-                onChange={(e) => setFormData({ ...formData, estimated_time: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    estimated_time: parseInt(e.target.value),
+                  })
+                }
               />
             </div>
             <div className="md:col-span-2">
               <Label>Langkah-langkah (JSON array)</Label>
               <Textarea
                 value={formData.procedure_steps}
-                onChange={(e) => setFormData({ ...formData, procedure_steps: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, procedure_steps: e.target.value })
+                }
                 placeholder='["Langkah 1", "Langkah 2", "Langkah 3"]'
                 rows={4}
               />
-              <p className="text-xs text-slate-500 mt-1">Format: ["Step 1", "Step 2", "Step 3"]</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Format: ["Step 1", "Step 2", "Step 3"]
+              </p>
             </div>
           </div>
         </form>
@@ -646,22 +762,46 @@ export function ProcedureManagement() {
         isLoading={isSubmitting}
       />
 
-      <DetailModal open={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detail Prosedur" size="lg">
+      <DetailModal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Prosedur"
+        size="lg"
+      >
         {selectedItem && (
           <div>
-            <DetailRow label="Nama Prosedur" value={selectedItem.procedure_name} />
-            <DetailRow label="Deskripsi" value={selectedItem.procedure_desc || "-"} />
-            <DetailRow label="Tipe Aset" value={selectedItem.asset_type_name || "General"} />
-            <DetailRow label="Estimasi Waktu" value={`${selectedItem.estimated_time} menit`} />
+            <DetailRow
+              label="Nama Prosedur"
+              value={selectedItem.procedure_name}
+            />
+            <DetailRow
+              label="Deskripsi"
+              value={selectedItem.procedure_desc || "-"}
+            />
+            <DetailRow
+              label="Tipe Aset"
+              value={selectedItem.asset_type_name || "General"}
+            />
+            <DetailRow
+              label="Estimasi Waktu"
+              value={`${selectedItem.estimated_time} menit`}
+            />
             <div className="py-3 border-b border-slate-100">
-              <span className="text-sm font-medium text-slate-500 block mb-2">Langkah-langkah</span>
+              <span className="text-sm font-medium text-slate-500 block mb-2">
+                Langkah-langkah
+              </span>
               <ol className="list-decimal list-inside space-y-1">
                 {parseSteps(selectedItem.procedure_steps).map((step, idx) => (
-                  <li key={idx} className="text-sm text-slate-800">{step}</li>
+                  <li key={idx} className="text-sm text-slate-800">
+                    {step}
+                  </li>
                 ))}
               </ol>
             </div>
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

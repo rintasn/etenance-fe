@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, UsersRound, UserPlus } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  UsersRound,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,12 +27,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Team {
   id_team: string;
@@ -53,7 +67,7 @@ export default function TeamManagement() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -70,7 +84,7 @@ export default function TeamManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/teams", {
+      const response = await fetch(`${BASE_URL}/teams`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -85,7 +99,7 @@ export default function TeamManagement() {
   const fetchOrganizations = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/organizations", {
+      const response = await fetch(`${BASE_URL}/organizations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -128,7 +142,9 @@ export default function TeamManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/teams/${selectedItem?.id_team}` : "/api/teams";
+      const url = isEditing
+        ? `${BASE_URL}/teams/${selectedItem?.id_team}`
+        : `${BASE_URL}/teams`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -142,7 +158,9 @@ export default function TeamManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -158,10 +176,13 @@ export default function TeamManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/teams/${selectedItem.id_team}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/teams/${selectedItem.id_team}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -185,8 +206,12 @@ export default function TeamManagement() {
             <UsersRound className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.team_name}</p>
-            <p className="text-xs text-slate-500">{row.original.organization_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.team_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {row.original.organization_name}
+            </p>
           </div>
         </div>
       ),
@@ -195,7 +220,9 @@ export default function TeamManagement() {
       accessorKey: "organization_name",
       header: "Organisasi",
       cell: ({ row }) => (
-        <span className="text-slate-600">{row.original.organization_name || "-"}</span>
+        <span className="text-slate-600">
+          {row.original.organization_name || "-"}
+        </span>
       ),
     },
     {
@@ -232,7 +259,10 @@ export default function TeamManagement() {
             <DropdownMenuItem>
               <UserPlus className="w-4 h-4 mr-2" /> Tambah Anggota
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -267,14 +297,23 @@ export default function TeamManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Tim" : "Tambah Tim"}
-        description={isEditing ? "Perbarui informasi tim" : "Masukkan informasi tim baru"}
+        description={
+          isEditing ? "Perbarui informasi tim" : "Masukkan informasi tim baru"
+        }
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -285,7 +324,9 @@ export default function TeamManagement() {
             <Label>Nama Tim *</Label>
             <Input
               value={formData.team_name}
-              onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, team_name: e.target.value })
+              }
               placeholder="Masukkan nama tim"
               required
             />
@@ -294,12 +335,22 @@ export default function TeamManagement() {
             <Label>Organisasi *</Label>
             <Select
               value={formData.id_organization}
-              onValueChange={(value) => setFormData({ ...formData, id_organization: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  id_organization: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue placeholder="Pilih organisasi" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih organisasi" />
+              </SelectTrigger>
               <SelectContent>
                 {organizations.map((org) => (
-                  <SelectItem key={org.id_organization} value={org.id_organization}>
+                  <SelectItem
+                    key={org.id_organization}
+                    value={org.id_organization}
+                  >
                     {org.org_name}
                   </SelectItem>
                 ))}
@@ -310,9 +361,16 @@ export default function TeamManagement() {
             <Label>Status *</Label>
             <Select
               value={formData.team_status}
-              onValueChange={(value) => setFormData({ ...formData, team_status: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  team_status: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
@@ -341,10 +399,22 @@ export default function TeamManagement() {
         {selectedItem && (
           <div>
             <DetailRow label="Nama Tim" value={selectedItem.team_name} />
-            <DetailRow label="Organisasi" value={selectedItem.organization_name || "-"} />
-            <DetailRow label="Jumlah Anggota" value={`${selectedItem.member_count || 0} anggota`} />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.team_status} />} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Organisasi"
+              value={selectedItem.organization_name || "-"}
+            />
+            <DetailRow
+              label="Jumlah Anggota"
+              value={`${selectedItem.member_count || 0} anggota`}
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.team_status} />}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

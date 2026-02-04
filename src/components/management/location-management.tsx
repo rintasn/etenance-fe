@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, MapPin, QrCode, Building } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  MapPin,
+  QrCode,
+  Building,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,11 +29,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Location {
   id_location: string;
@@ -71,7 +86,7 @@ export default function LocationManagement() {
   const [parentLocations, setParentLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -89,13 +104,15 @@ export default function LocationManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locations", {
+      const response = await fetch(`${BASE_URL}/locations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
       if (result.data) {
         setData(result.data);
-        setParentLocations(result.data.filter((l: Location) => l.level_location === 1));
+        setParentLocations(
+          result.data.filter((l: Location) => l.level_location === 1),
+        );
       }
     } catch (error) {
       toast.error("Gagal memuat data");
@@ -107,7 +124,7 @@ export default function LocationManagement() {
   const fetchTeams = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/teams", {
+      const response = await fetch(`${BASE_URL}/teams`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -120,7 +137,7 @@ export default function LocationManagement() {
   const fetchVendors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/vendors", {
+      const response = await fetch(`${BASE_URL}/vendors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -168,7 +185,9 @@ export default function LocationManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/locations/${selectedItem?.id_location}` : "/api/locations";
+      const url = isEditing
+        ? `${BASE_URL}/locations/${selectedItem?.id_location}`
+        : `${BASE_URL}/locations`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -182,7 +201,9 @@ export default function LocationManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -198,10 +219,13 @@ export default function LocationManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/locations/${selectedItem.id_location}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/locations/${selectedItem.id_location}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -225,9 +249,13 @@ export default function LocationManagement() {
             <MapPin className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.location_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.location_name}
+            </p>
             {row.original.parent_location_name && (
-              <p className="text-xs text-slate-500">📍 {row.original.parent_location_name}</p>
+              <p className="text-xs text-slate-500">
+                📍 {row.original.parent_location_name}
+              </p>
             )}
           </div>
         </div>
@@ -252,20 +280,23 @@ export default function LocationManagement() {
     {
       accessorKey: "qr_code",
       header: "QR Code",
-      cell: ({ row }) => (
+      cell: ({ row }) =>
         row.original.qr_code ? (
           <div className="flex items-center gap-1 text-slate-600">
             <QrCode className="w-4 h-4" />
             <span className="text-xs font-mono">{row.original.qr_code}</span>
           </div>
-        ) : "-"
-      ),
+        ) : (
+          "-"
+        ),
     },
     {
       accessorKey: "vendor_name",
       header: "Vendor",
       cell: ({ row }) => (
-        <span className="text-slate-600">{row.original.vendor_name || "-"}</span>
+        <span className="text-slate-600">
+          {row.original.vendor_name || "-"}
+        </span>
       ),
     },
     {
@@ -285,7 +316,10 @@ export default function LocationManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -320,15 +354,26 @@ export default function LocationManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Lokasi" : "Tambah Lokasi"}
-        description={isEditing ? "Perbarui informasi lokasi" : "Masukkan informasi lokasi baru"}
+        description={
+          isEditing
+            ? "Perbarui informasi lokasi"
+            : "Masukkan informasi lokasi baru"
+        }
         size="lg"
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -340,7 +385,9 @@ export default function LocationManagement() {
               <Label>Nama Lokasi *</Label>
               <Input
                 value={formData.location_name}
-                onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, location_name: e.target.value })
+                }
                 placeholder="Masukkan nama lokasi"
                 required
               />
@@ -349,7 +396,9 @@ export default function LocationManagement() {
               <Label>Alamat</Label>
               <Input
                 value={formData.location_address}
-                onChange={(e) => setFormData({ ...formData, location_address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, location_address: e.target.value })
+                }
                 placeholder="Masukkan alamat lokasi"
               />
             </div>
@@ -357,7 +406,9 @@ export default function LocationManagement() {
               <Label>Deskripsi</Label>
               <Textarea
                 value={formData.location_desc}
-                onChange={(e) => setFormData({ ...formData, location_desc: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, location_desc: e.target.value })
+                }
                 placeholder="Masukkan deskripsi lokasi"
                 rows={3}
               />
@@ -366,13 +417,17 @@ export default function LocationManagement() {
               <Label>Parent Lokasi</Label>
               <Select
                 value={formData.id_parent_location}
-                onValueChange={(value) => setFormData({ 
-                  ...formData, 
-                  id_parent_location: value,
-                  level_location: value ? 2 : 1
-                })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_parent_location: value,
+                    level_location: value ? 2 : 1,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih parent lokasi (opsional)" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih parent lokasi (opsional)" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada (Level 1)</SelectItem>
                   {parentLocations.map((loc) => (
@@ -389,16 +444,28 @@ export default function LocationManagement() {
                 type="number"
                 min={1}
                 value={formData.level_location}
-                onChange={(e) => setFormData({ ...formData, level_location: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    level_location: parseInt(e.target.value),
+                  })
+                }
               />
             </div>
             <div>
               <Label>Tim</Label>
               <Select
                 value={formData.id_team}
-                onValueChange={(value) => setFormData({ ...formData, id_team: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_team: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih tim" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih tim" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada</SelectItem>
                   {teams.map((team) => (
@@ -413,9 +480,16 @@ export default function LocationManagement() {
               <Label>Vendor</Label>
               <Select
                 value={formData.id_vendor}
-                onValueChange={(value) => setFormData({ ...formData, id_vendor: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_vendor: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih vendor (opsional)" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih vendor (opsional)" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada</SelectItem>
                   {vendors.map((vendor) => (
@@ -430,7 +504,9 @@ export default function LocationManagement() {
               <Label>QR Code</Label>
               <Input
                 value={formData.qr_code}
-                onChange={(e) => setFormData({ ...formData, qr_code: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, qr_code: e.target.value })
+                }
                 placeholder="Masukkan kode QR"
               />
             </div>
@@ -459,12 +535,21 @@ export default function LocationManagement() {
             <DetailRow label="Nama Lokasi" value={selectedItem.location_name} />
             <DetailRow label="Alamat" value={selectedItem.location_address} />
             <DetailRow label="Deskripsi" value={selectedItem.location_desc} />
-            <DetailRow label="Parent Lokasi" value={selectedItem.parent_location_name || "-"} />
-            <DetailRow label="Level" value={`Level ${selectedItem.level_location}`} />
+            <DetailRow
+              label="Parent Lokasi"
+              value={selectedItem.parent_location_name || "-"}
+            />
+            <DetailRow
+              label="Level"
+              value={`Level ${selectedItem.level_location}`}
+            />
             <DetailRow label="Tim" value={selectedItem.team_name || "-"} />
             <DetailRow label="Vendor" value={selectedItem.vendor_name || "-"} />
             <DetailRow label="QR Code" value={selectedItem.qr_code || "-"} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

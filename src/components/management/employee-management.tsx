@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, User, Phone, MapPin, BadgeCheck } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  User,
+  Phone,
+  MapPin,
+  BadgeCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,13 +31,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Employee {
   id_employee: string;
@@ -72,7 +88,7 @@ export default function EmployeeManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -89,7 +105,7 @@ export default function EmployeeManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/employees", {
+      const response = await fetch(`${BASE_URL}/employees`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -104,7 +120,7 @@ export default function EmployeeManagement() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/users", {
+      const response = await fetch(`${BASE_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -151,7 +167,9 @@ export default function EmployeeManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/employees/${selectedItem?.id_employee}` : "/api/employees";
+      const url = isEditing
+        ? `${BASE_URL}/employees/${selectedItem?.id_employee}`
+        : `${BASE_URL}/employees`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -165,7 +183,9 @@ export default function EmployeeManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -181,10 +201,13 @@ export default function EmployeeManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/employees/${selectedItem.id_employee}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/employees/${selectedItem.id_employee}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -210,7 +233,9 @@ export default function EmployeeManagement() {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium text-slate-800">{row.original.emp_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.emp_name}
+            </p>
             <p className="text-xs text-slate-500">{row.original.emp_npk}</p>
           </div>
         </div>
@@ -220,7 +245,9 @@ export default function EmployeeManagement() {
       accessorKey: "emp_level",
       header: "Level",
       cell: ({ row }) => (
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${levelColors[row.original.emp_level] || levelColors.junior}`}>
+        <span
+          className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${levelColors[row.original.emp_level] || levelColors.junior}`}
+        >
           {row.original.emp_level}
         </span>
       ),
@@ -228,7 +255,7 @@ export default function EmployeeManagement() {
     {
       accessorKey: "emp_available",
       header: "Ketersediaan",
-      cell: ({ row }) => (
+      cell: ({ row }) =>
         row.original.emp_available ? (
           <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
             <BadgeCheck className="w-3 h-3 mr-1" />
@@ -236,8 +263,7 @@ export default function EmployeeManagement() {
           </Badge>
         ) : (
           <Badge variant="secondary">Tidak Tersedia</Badge>
-        )
-      ),
+        ),
     },
     {
       accessorKey: "emp_status",
@@ -261,7 +287,10 @@ export default function EmployeeManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -296,14 +325,25 @@ export default function EmployeeManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Karyawan" : "Tambah Karyawan"}
-        description={isEditing ? "Perbarui informasi karyawan" : "Masukkan informasi karyawan baru"}
+        description={
+          isEditing
+            ? "Perbarui informasi karyawan"
+            : "Masukkan informasi karyawan baru"
+        }
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -315,7 +355,9 @@ export default function EmployeeManagement() {
               <Label>Nama Karyawan *</Label>
               <Input
                 value={formData.emp_name}
-                onChange={(e) => setFormData({ ...formData, emp_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, emp_name: e.target.value })
+                }
                 placeholder="Masukkan nama karyawan"
                 required
               />
@@ -324,7 +366,9 @@ export default function EmployeeManagement() {
               <Label>NPK</Label>
               <Input
                 value={formData.emp_npk}
-                onChange={(e) => setFormData({ ...formData, emp_npk: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, emp_npk: e.target.value })
+                }
                 placeholder="Nomor Pokok Karyawan"
               />
             </div>
@@ -332,9 +376,16 @@ export default function EmployeeManagement() {
               <Label>Level *</Label>
               <Select
                 value={formData.emp_level}
-                onValueChange={(value) => setFormData({ ...formData, emp_level: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    emp_level: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="junior">Junior</SelectItem>
                   <SelectItem value="mid">Mid</SelectItem>
@@ -348,7 +399,12 @@ export default function EmployeeManagement() {
               <Label>Alamat</Label>
               <Textarea
                 value={formData.emp_address}
-                onChange={(e) => setFormData({ ...formData, emp_address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emp_address: e.target.value,
+                  })
+                }
                 placeholder="Masukkan alamat karyawan"
                 rows={3}
               />
@@ -357,9 +413,16 @@ export default function EmployeeManagement() {
               <Label>Link ke User</Label>
               <Select
                 value={formData.id_user}
-                onValueChange={(value) => setFormData({ ...formData, id_user: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    id_user: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue placeholder="Pilih user (opsional)" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih user (opsional)" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Tidak ada</SelectItem>
                   {users.map((user) => (
@@ -374,9 +437,16 @@ export default function EmployeeManagement() {
               <Label>Status *</Label>
               <Select
                 value={formData.emp_status}
-                onValueChange={(value) => setFormData({ ...formData, emp_status: value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    emp_status: value === "__none__" ? "" : value,
+                  })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
@@ -387,11 +457,15 @@ export default function EmployeeManagement() {
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                 <div>
                   <Label>Ketersediaan</Label>
-                  <p className="text-sm text-slate-500">Karyawan tersedia untuk ditugaskan</p>
+                  <p className="text-sm text-slate-500">
+                    Karyawan tersedia untuk ditugaskan
+                  </p>
                 </div>
                 <Switch
                   checked={formData.emp_available}
-                  onCheckedChange={(checked) => setFormData({ ...formData, emp_available: checked })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, emp_available: checked })
+                  }
                 />
               </div>
             </div>
@@ -424,26 +498,47 @@ export default function EmployeeManagement() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-lg font-semibold text-slate-800">{selectedItem.emp_name}</h3>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  {selectedItem.emp_name}
+                </h3>
                 <p className="text-slate-500">{selectedItem.emp_npk}</p>
               </div>
             </div>
-            <DetailRow label="Level" value={
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${levelColors[selectedItem.emp_level]}`}>
-                {selectedItem.emp_level}
-              </span>
-            } />
+            <DetailRow
+              label="Level"
+              value={
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${levelColors[selectedItem.emp_level]}`}
+                >
+                  {selectedItem.emp_level}
+                </span>
+              }
+            />
             <DetailRow label="Alamat" value={selectedItem.emp_address || "-"} />
-            <DetailRow label="User Account" value={selectedItem.username || "-"} />
-            <DetailRow label="Ketersediaan" value={
-              selectedItem.emp_available ? (
-                <Badge className="bg-emerald-100 text-emerald-700">Tersedia</Badge>
-              ) : (
-                <Badge variant="secondary">Tidak Tersedia</Badge>
-              )
-            } />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.emp_status} />} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="User Account"
+              value={selectedItem.username || "-"}
+            />
+            <DetailRow
+              label="Ketersediaan"
+              value={
+                selectedItem.emp_available ? (
+                  <Badge className="bg-emerald-100 text-emerald-700">
+                    Tersedia
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">Tidak Tersedia</Badge>
+                )
+              }
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.emp_status} />}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

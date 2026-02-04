@@ -87,6 +87,8 @@ import React from "react";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface JobLoading {
   id_job: string;
   id_wo: string;
@@ -547,7 +549,7 @@ export default function JobLoadingManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/job-loading", {
+      const response = await fetch(`${BASE_URL}/job-loading`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -562,7 +564,7 @@ export default function JobLoadingManagement() {
   const fetchWorkOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/work-orders", {
+      const response = await fetch(`${BASE_URL}/work-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -575,7 +577,7 @@ export default function JobLoadingManagement() {
   const fetchEmployees = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/employees", {
+      const response = await fetch(`${BASE_URL}/employees`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -637,7 +639,7 @@ export default function JobLoadingManagement() {
         }
       }
 
-      const response = await fetch(`/api/job-loading/${item.id_job}`, {
+      const response = await fetch(`${BASE_URL}/job-loading/${item.id_job}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -664,8 +666,8 @@ export default function JobLoadingManagement() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/job-loading/${selectedItem?.id_job}`
-        : "/api/job-loading";
+        ? `${BASE_URL}/job-loading/${selectedItem?.id_job}`
+        : `${BASE_URL}/job-loading`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -706,7 +708,7 @@ export default function JobLoadingManagement() {
 
       // Create job for each selected employee
       for (const empId of selectedEmployees) {
-        await fetch("/api/job-loading", {
+        await fetch(`${BASE_URL}/job-loading`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -737,10 +739,13 @@ export default function JobLoadingManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/job-loading/${selectedItem.id_job}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/job-loading/${selectedItem.id_job}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -1132,7 +1137,10 @@ export default function JobLoadingManagement() {
             <Select
               value={formData.id_wo}
               onValueChange={(value) =>
-                setFormData({ ...formData, id_wo: value })
+                setFormData({
+                  ...formData,
+                  id_wo: value === "__none__" ? "" : value,
+                })
               }
               disabled={isEditing}
             >
@@ -1159,7 +1167,10 @@ export default function JobLoadingManagement() {
             <Select
               value={formData.id_employee}
               onValueChange={(value) =>
-                setFormData({ ...formData, id_employee: value })
+                setFormData({
+                  ...formData,
+                  id_employee: value === "__none__" ? "" : value,
+                })
               }
             >
               <SelectTrigger>

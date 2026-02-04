@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, Truck, Phone, Mail } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Truck,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +22,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface Vendor {
   id_vendor: string;
@@ -50,7 +65,7 @@ export default function VendorManagement() {
   const [data, setData] = useState<Vendor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -66,7 +81,7 @@ export default function VendorManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/vendors", {
+      const response = await fetch(`${BASE_URL}/vendors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -112,7 +127,9 @@ export default function VendorManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/vendors/${selectedItem?.id_vendor}` : "/api/vendors";
+      const url = isEditing
+        ? `${BASE_URL}/vendors/${selectedItem?.id_vendor}`
+        : `${BASE_URL}/vendors`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -126,7 +143,9 @@ export default function VendorManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -142,10 +161,13 @@ export default function VendorManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/vendors/${selectedItem.id_vendor}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/vendors/${selectedItem.id_vendor}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -172,8 +194,12 @@ export default function VendorManagement() {
             <Truck className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.vendor_name}</p>
-            <p className="text-xs text-slate-500 line-clamp-1">{row.original.vendor_contracts}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.vendor_name}
+            </p>
+            <p className="text-xs text-slate-500 line-clamp-1">
+              {row.original.vendor_contracts}
+            </p>
           </div>
         </div>
       ),
@@ -182,14 +208,18 @@ export default function VendorManagement() {
       accessorKey: "vendor_address",
       header: "Alamat",
       cell: ({ row }) => (
-        <span className="text-slate-600 line-clamp-2">{row.original.vendor_address || "-"}</span>
+        <span className="text-slate-600 line-clamp-2">
+          {row.original.vendor_address || "-"}
+        </span>
       ),
     },
     {
       accessorKey: "vendor_contracts",
       header: "Kontrak",
       cell: ({ row }) => (
-        <span className="text-slate-600">{row.original.vendor_contracts || "-"}</span>
+        <span className="text-slate-600">
+          {row.original.vendor_contracts || "-"}
+        </span>
       ),
     },
     {
@@ -209,7 +239,10 @@ export default function VendorManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -244,14 +277,25 @@ export default function VendorManagement() {
         open={showFormModal}
         onClose={() => setShowFormModal(false)}
         title={isEditing ? "Edit Vendor" : "Tambah Vendor"}
-        description={isEditing ? "Perbarui informasi vendor" : "Masukkan informasi vendor baru"}
+        description={
+          isEditing
+            ? "Perbarui informasi vendor"
+            : "Masukkan informasi vendor baru"
+        }
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -262,7 +306,9 @@ export default function VendorManagement() {
             <Label>Nama Vendor *</Label>
             <Input
               value={formData.vendor_name}
-              onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, vendor_name: e.target.value })
+              }
               placeholder="Masukkan nama vendor"
               required
             />
@@ -271,7 +317,9 @@ export default function VendorManagement() {
             <Label>Alamat</Label>
             <Textarea
               value={formData.vendor_address}
-              onChange={(e) => setFormData({ ...formData, vendor_address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, vendor_address: e.target.value })
+              }
               placeholder="Masukkan alamat vendor"
               rows={3}
             />
@@ -280,7 +328,9 @@ export default function VendorManagement() {
             <Label>Deskripsi Kontrak</Label>
             <Input
               value={formData.vendor_contracts}
-              onChange={(e) => setFormData({ ...formData, vendor_contracts: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, vendor_contracts: e.target.value })
+              }
               placeholder="Contoh: HVAC Equipment & Services"
             />
           </div>
@@ -291,7 +341,9 @@ export default function VendorManagement() {
                 <button
                   key={color.value}
                   type="button"
-                  onClick={() => setFormData({ ...formData, vendor_color: color.value })}
+                  onClick={() =>
+                    setFormData({ ...formData, vendor_color: color.value })
+                  }
                   className={`w-8 h-8 rounded-lg border-2 transition-all ${
                     formData.vendor_color === color.value
                       ? "border-slate-800 scale-110"
@@ -327,27 +379,45 @@ export default function VendorManagement() {
             <div className="flex items-center gap-4 mb-6 pb-6 border-b">
               <div
                 className="w-16 h-16 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: selectedItem.vendor_color || "#0066CC" }}
+                style={{
+                  backgroundColor: selectedItem.vendor_color || "#0066CC",
+                }}
               >
                 <Truck className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-800">{selectedItem.vendor_name}</h3>
-                <p className="text-slate-500">{selectedItem.vendor_contracts}</p>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  {selectedItem.vendor_name}
+                </h3>
+                <p className="text-slate-500">
+                  {selectedItem.vendor_contracts}
+                </p>
               </div>
             </div>
-            <DetailRow label="Alamat" value={selectedItem.vendor_address || "-"} />
-            <DetailRow label="Deskripsi Kontrak" value={selectedItem.vendor_contracts || "-"} />
-            <DetailRow label="Warna" value={
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded"
-                  style={{ backgroundColor: selectedItem.vendor_color }}
-                />
-                <span>{selectedItem.vendor_color}</span>
-              </div>
-            } />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Alamat"
+              value={selectedItem.vendor_address || "-"}
+            />
+            <DetailRow
+              label="Deskripsi Kontrak"
+              value={selectedItem.vendor_contracts || "-"}
+            />
+            <DetailRow
+              label="Warna"
+              value={
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 rounded"
+                    style={{ backgroundColor: selectedItem.vendor_color }}
+                  />
+                  <span>{selectedItem.vendor_color}</span>
+                </div>
+              }
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

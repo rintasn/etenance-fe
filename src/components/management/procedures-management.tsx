@@ -74,6 +74,8 @@ import { toast } from "sonner";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface ProcedureStep {
   id: string;
   order: number;
@@ -816,7 +818,7 @@ export default function ProceduresManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/procedures", {
+      const response = await fetch(`${BASE_URL}/procedures`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -831,7 +833,7 @@ export default function ProceduresManagement() {
   const fetchAssetTypes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/asset-types", {
+      const response = await fetch(`${BASE_URL}/asset-types`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -915,8 +917,8 @@ export default function ProceduresManagement() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/procedures/${selectedItem?.id_procedure}`
-        : "/api/procedures";
+        ? `${BASE_URL}/procedures/${selectedItem?.id_procedure}`
+        : `${BASE_URL}/procedures`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -954,7 +956,7 @@ export default function ProceduresManagement() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `/api/procedures/${selectedItem.id_procedure}`,
+        `${BASE_URL}/procedures/${selectedItem.id_procedure}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -1232,16 +1234,19 @@ export default function ProceduresManagement() {
             <div>
               <Label>Tipe Aset</Label>
               <Select
-                value={formData.id_asset_type}
+                value={formData.id_asset_type || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, id_asset_type: value })
+                  setFormData({
+                    ...formData,
+                    id_asset_type: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih tipe aset" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Umum (Semua Tipe)</SelectItem>
+                  <SelectItem value="__none__">Umum (Semua Tipe)</SelectItem>
                   {assetTypes.map((type) => (
                     <SelectItem
                       key={type.id_asset_type}

@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye, Package, Building2, GitBranch } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Package,
+  Building2,
+  GitBranch,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +29,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, DeleteModal, DetailModal, DetailRow } from "@/components/ui/modal";
+import {
+  FormModal,
+  DeleteModal,
+  DetailModal,
+  DetailRow,
+} from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +42,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 // ==================== ASSET TYPE MANAGEMENT ====================
+
+const BASE_URL = "http://localhost:8080/api/v1";
 
 interface AssetType {
   id_asset_type: string;
@@ -48,7 +63,7 @@ export function AssetTypeManagement() {
   const [data, setData] = useState<AssetType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -64,7 +79,7 @@ export function AssetTypeManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/asset-types", {
+      const response = await fetch(`${BASE_URL}/asset-types`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -109,7 +124,9 @@ export function AssetTypeManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/asset-types/${selectedItem?.id_asset_type}` : "/api/asset-types";
+      const url = isEditing
+        ? `${BASE_URL}/asset-types/${selectedItem?.id_asset_type}`
+        : `${BASE_URL}/asset-types`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -123,7 +140,9 @@ export function AssetTypeManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -139,10 +158,13 @@ export function AssetTypeManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/asset-types/${selectedItem.id_asset_type}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/asset-types/${selectedItem.id_asset_type}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -166,7 +188,9 @@ export function AssetTypeManagement() {
             <Package className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.type_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.type_name}
+            </p>
           </div>
         </div>
       ),
@@ -181,7 +205,9 @@ export function AssetTypeManagement() {
     {
       accessorKey: "status_asset_type",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.status_asset_type} />,
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.status_asset_type} />
+      ),
     },
     {
       id: "actions",
@@ -200,7 +226,10 @@ export function AssetTypeManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -236,9 +265,18 @@ export function AssetTypeManagement() {
         title={isEditing ? "Edit Tipe Aset" : "Tambah Tipe Aset"}
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>Batal</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -249,7 +287,9 @@ export function AssetTypeManagement() {
             <Label>Nama Tipe Aset *</Label>
             <Input
               value={formData.type_name}
-              onChange={(e) => setFormData({ ...formData, type_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, type_name: e.target.value })
+              }
               placeholder="Contoh: HVAC, Electrical, Mechanical"
               required
             />
@@ -258,7 +298,9 @@ export function AssetTypeManagement() {
             <Label>Deskripsi</Label>
             <Textarea
               value={formData.type_desc}
-              onChange={(e) => setFormData({ ...formData, type_desc: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, type_desc: e.target.value })
+              }
               placeholder="Masukkan deskripsi tipe aset"
               rows={3}
             />
@@ -267,9 +309,16 @@ export function AssetTypeManagement() {
             <Label>Status *</Label>
             <Select
               value={formData.status_asset_type}
-              onValueChange={(value) => setFormData({ ...formData, status_asset_type: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  status_asset_type: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
@@ -288,13 +337,26 @@ export function AssetTypeManagement() {
         isLoading={isSubmitting}
       />
 
-      <DetailModal open={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detail Tipe Aset">
+      <DetailModal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Tipe Aset"
+      >
         {selectedItem && (
           <div>
             <DetailRow label="Nama Tipe" value={selectedItem.type_name} />
-            <DetailRow label="Deskripsi" value={selectedItem.type_desc || "-"} />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.status_asset_type} />} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Deskripsi"
+              value={selectedItem.type_desc || "-"}
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.status_asset_type} />}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>
@@ -328,7 +390,7 @@ export function OrganizationManagement() {
   const [parentOrgs, setParentOrgs] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -344,13 +406,15 @@ export function OrganizationManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/organizations", {
+      const response = await fetch(`${BASE_URL}/organizations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
       if (result.data) {
         setData(result.data);
-        setParentOrgs(result.data.filter((o: Organization) => o.org_level === 1));
+        setParentOrgs(
+          result.data.filter((o: Organization) => o.org_level === 1),
+        );
       }
     } catch (error) {
       toast.error("Gagal memuat data");
@@ -394,7 +458,9 @@ export function OrganizationManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = isEditing ? `/api/organizations/${selectedItem?.id_organization}` : "/api/organizations";
+      const url = isEditing
+        ? `${BASE_URL}/organizations/${selectedItem?.id_organization}`
+        : `${BASE_URL}/organizations`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -408,7 +474,9 @@ export function OrganizationManagement() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      toast.success(isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
+      toast.success(
+        isEditing ? "Data berhasil diperbarui" : "Data berhasil ditambahkan",
+      );
       setShowFormModal(false);
       fetchData();
     } catch (error) {
@@ -424,10 +492,13 @@ export function OrganizationManagement() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/organizations/${selectedItem.id_organization}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${BASE_URL}/organizations/${selectedItem.id_organization}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -455,9 +526,13 @@ export function OrganizationManagement() {
             )}
           </div>
           <div>
-            <p className="font-medium text-slate-800">{row.original.org_name}</p>
+            <p className="font-medium text-slate-800">
+              {row.original.org_name}
+            </p>
             {row.original.parent_org_name && (
-              <p className="text-xs text-slate-500">↳ {row.original.parent_org_name}</p>
+              <p className="text-xs text-slate-500">
+                ↳ {row.original.parent_org_name}
+              </p>
             )}
           </div>
         </div>
@@ -466,9 +541,7 @@ export function OrganizationManagement() {
     {
       accessorKey: "label",
       header: "Label",
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.original.label}</Badge>
-      ),
+      cell: ({ row }) => <Badge variant="outline">{row.original.label}</Badge>,
     },
     {
       accessorKey: "org_level",
@@ -499,7 +572,10 @@ export function OrganizationManagement() {
             <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Pencil className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() => handleDelete(row.original)}
+              className="text-red-600"
+            >
               <Trash2 className="w-4 h-4 mr-2" /> Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -535,9 +611,18 @@ export function OrganizationManagement() {
         title={isEditing ? "Edit Organisasi" : "Tambah Organisasi"}
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={() => setShowFormModal(false)} disabled={isSubmitting}>Batal</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+            <Button
+              variant="outline"
+              onClick={() => setShowFormModal(false)}
+              disabled={isSubmitting}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+            >
               {isSubmitting ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
@@ -548,7 +633,9 @@ export function OrganizationManagement() {
             <Label>Nama Organisasi *</Label>
             <Input
               value={formData.org_name}
-              onChange={(e) => setFormData({ ...formData, org_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, org_name: e.target.value })
+              }
               placeholder="Masukkan nama organisasi"
               required
             />
@@ -557,17 +644,24 @@ export function OrganizationManagement() {
             <Label>Parent Organisasi</Label>
             <Select
               value={formData.id_parent_organization}
-              onValueChange={(value) => setFormData({ 
-                ...formData, 
-                id_parent_organization: value,
-                org_level: value ? 2 : 1
-              })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  id_parent_organization: value,
+                  org_level: value ? 2 : 1,
+                })
+              }
             >
-              <SelectTrigger><SelectValue placeholder="Pilih parent (opsional)" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih parent (opsional)" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Tidak ada (Level 1)</SelectItem>
                 {parentOrgs.map((org) => (
-                  <SelectItem key={org.id_organization} value={org.id_organization}>
+                  <SelectItem
+                    key={org.id_organization}
+                    value={org.id_organization}
+                  >
                     {org.org_name}
                   </SelectItem>
                 ))}
@@ -578,9 +672,16 @@ export function OrganizationManagement() {
             <Label>Label</Label>
             <Select
               value={formData.label}
-              onValueChange={(value) => setFormData({ ...formData, label: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  label: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Headquarters">Headquarters</SelectItem>
                 <SelectItem value="Division">Division</SelectItem>
@@ -594,9 +695,16 @@ export function OrganizationManagement() {
             <Label>Status *</Label>
             <Select
               value={formData.org_status}
-              onValueChange={(value) => setFormData({ ...formData, org_status: value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  org_status: value === "__none__" ? "" : value,
+                })
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
@@ -615,15 +723,31 @@ export function OrganizationManagement() {
         isLoading={isSubmitting}
       />
 
-      <DetailModal open={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detail Organisasi">
+      <DetailModal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Organisasi"
+      >
         {selectedItem && (
           <div>
             <DetailRow label="Nama Organisasi" value={selectedItem.org_name} />
-            <DetailRow label="Parent" value={selectedItem.parent_org_name || "-"} />
+            <DetailRow
+              label="Parent"
+              value={selectedItem.parent_org_name || "-"}
+            />
             <DetailRow label="Label" value={selectedItem.label} />
-            <DetailRow label="Level" value={`Level ${selectedItem.org_level}`} />
-            <DetailRow label="Status" value={<StatusBadge status={selectedItem.org_status} />} />
-            <DetailRow label="Dibuat" value={new Date(selectedItem.created_at).toLocaleString("id-ID")} />
+            <DetailRow
+              label="Level"
+              value={`Level ${selectedItem.org_level}`}
+            />
+            <DetailRow
+              label="Status"
+              value={<StatusBadge status={selectedItem.org_status} />}
+            />
+            <DetailRow
+              label="Dibuat"
+              value={new Date(selectedItem.created_at).toLocaleString("id-ID")}
+            />
           </div>
         )}
       </DetailModal>

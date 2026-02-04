@@ -82,6 +82,8 @@ import { toast } from "sonner";
 
 // ==================== INTERFACES ====================
 
+const BASE_URL = "http://localhost:8080/api/v1";
+
 interface MasterKey {
   id_master_key: string;
   key_group: string;
@@ -535,7 +537,7 @@ export default function MasterKeyManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/master-keys", {
+      const response = await fetch(`${BASE_URL}/master-keys`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
@@ -596,14 +598,17 @@ export default function MasterKeyManagement() {
   const handleToggleActive = async (item: MasterKey) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/master-keys/${item.id_master_key}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${BASE_URL}/master-keys/${item.id_master_key}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, is_active: !item.is_active }),
         },
-        body: JSON.stringify({ ...item, is_active: !item.is_active }),
-      });
+      );
 
       if (!response.ok) throw new Error("Gagal mengubah status");
 
@@ -632,8 +637,8 @@ export default function MasterKeyManagement() {
     try {
       const token = localStorage.getItem("token");
       const url = isEditing
-        ? `/api/master-keys/${selectedItem?.id_master_key}`
-        : "/api/master-keys";
+        ? `${BASE_URL}/master-keys/${selectedItem?.id_master_key}`
+        : `${BASE_URL}/master-keys`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -666,7 +671,7 @@ export default function MasterKeyManagement() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `/api/master-keys/${selectedItem.id_master_key}`,
+        `${BASE_URL}/master-keys/${selectedItem.id_master_key}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -1066,7 +1071,10 @@ export default function MasterKeyManagement() {
               <Select
                 value={formData.key_group}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, key_group: value })
+                  setFormData({
+                    ...formData,
+                    key_group: value === "__none__" ? "" : value,
+                  })
                 }
               >
                 <SelectTrigger>
